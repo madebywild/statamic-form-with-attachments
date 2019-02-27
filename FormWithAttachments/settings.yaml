@@ -1,0 +1,33 @@
+fields:
+  forms:
+    type: replicator
+    display: Forms
+    instructions: Set up forms, add recipients and file deletion handling
+    sets:
+      form:
+        display: Form
+        fields:
+          formset:
+            type: suggest
+            mode: form_with_attachments.formsets
+            display: Formset
+            instructions: Select formset
+            max_items: 1
+          settings:
+            type: grid
+            instructions: 'A repeatable and reorderable container of fields.'
+            fields:
+              recipient:
+                type: text
+                instructions: 'Enter recipient e-mail'
+              template:
+                type: suggest
+                mode: form_with_attachments.email_templates
+                max_items: 1
+              subject:
+                type: text
+                instructions: 'Enter e-mail subjecet'
+          file_deletion:
+            type: toggle
+            display: File deletion
+            instructions: 'Should the attachments get deleted after e-mail sending? (Useful for General Data Protection Regulation)'
