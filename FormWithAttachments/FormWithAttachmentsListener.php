@@ -24,15 +24,21 @@ class FormWithAttachmentsListener extends Listener
         $emails = [];
         $file_deletion = false;
 
+        $formset = $submission->formset()->name();
+        $settings_forms = collect(array_get($this->getConfig(), 'forms', []));
+        $settings_formsets = $settings_forms->pluck('formset')->unique()->filter();
+
+        if (! $settings_formsets->contains($formset)) {
+            return false;
+        }
+
         foreach ($submission->fields() as $key => $value) {
             if (isset($value['type']) && $value['type'] === 'asset' && $submission->get($key)) {
-                array_push($assets, $submission->get($key));
+                array_push($assets, root_path(trim($submission->get($key), '/')));
             }
         }
 
-        $settings = $this->getConfig();
-
-        foreach ($settings['forms'] as $form) {
+        foreach ($settings_forms as $form) {
             foreach ($form['settings'] as $setting) {
                 $single_email = [];
                 $single_email['subject'] = $setting['subject'];
