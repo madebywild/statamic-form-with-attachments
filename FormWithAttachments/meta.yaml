@@ -1,5 +1,5 @@
 name: 'Form with Attachments'
-version: '1.1'
+version: '1.2'
 description: 'Sends form submissions as email with attachment'
 developer: 'wild'
 developer_url: 'https://wild.as'
