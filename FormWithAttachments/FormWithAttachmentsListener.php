@@ -6,6 +6,7 @@ use Statamic\Extend\Listener;
 use Statamic\Contracts\Forms\Submission;
 use Statamic\API\Email;
 use Statamic\API\File;
+use Statamic\API\Parse;
 
 class FormWithAttachmentsListener extends Listener
 {
@@ -40,10 +41,17 @@ class FormWithAttachmentsListener extends Listener
 
         foreach ($settings_forms as $form) {
             foreach ($form['settings'] as $setting) {
+                $setting = $this->parseConfig($setting, $submission->toArray());
+
                 $single_email = [];
                 $single_email['subject'] = $setting['subject'];
                 $single_email['recipient'] = $setting['recipient'];
                 $single_email['template'] = $setting['template'];
+
+                if ($reply_to = array_get($setting, 'reply_to')) {
+                    $single_email['reply_to'] = $reply_to;
+                }
+
                 array_push($emails, $single_email);
             }
             $file_deletion = (Boolean)$form['file_deletion'];
@@ -52,22 +60,45 @@ class FormWithAttachmentsListener extends Listener
         $submissionData = $submission->toArray();
 
         foreach ($emails as $email) {
-            $email_builder = Email::create();
-            if (empty($assets)) {
-                $email_builder->to($email['recipient'])->subject($email['subject'])->template($email['template'])->with($submissionData);
-            } else {
-                $email_builder->to($email['recipient'])->subject($email['subject'])->template($email['template'])->with($submissionData);
+            $builder = Email::create()
+                        ->to($email['recipient'])
+                        ->subject($email['subject'])
+                        ->template($email['template'])
+                        ->with($submissionData);
+
+            if (isset($email['reply_to'])) {
+                $builder->replyTo($email['reply_to']);
+            }
+
+            if (! empty($assets)) {
                 foreach ($assets as $asset) {
-                    $email_builder->attach($asset);
+                    $builder->attach($asset);
                 }
             }
-            $email_builder->send();
+
+            $builder->send();
         }
 
-        if ($file_deletion && !empty($assets)) {
+        if ($file_deletion && ! empty($assets)) {
             foreach ($assets as $asset) {
                 File::delete($asset);
             }
         }
+    }
+
+    /**
+     * Parse the config values as templates so submission values may be used within them.
+     *
+     * @param  array  $config
+     * @param  array  $data
+     * @return array
+     */
+    private function parseConfig(array $config, array $data)
+    {
+        foreach ($config as $key => &$value) {
+            $value = Parse::template(Parse::env($value), $data);
+        }
+
+        return $config;
     }
 }

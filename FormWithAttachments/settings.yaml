@@ -11,7 +11,6 @@ fields:
             type: suggest
             mode: form_with_attachments.formsets
             display: Formset
-            instructions: Select formset
             max_items: 1
           settings:
             type: grid
@@ -20,13 +19,16 @@ fields:
               recipient:
                 type: text
                 instructions: 'Enter recipient e-mail'
+              reply_to:
+                type: text
+                display: 'Reply To'
+                instructions: 'Enter if you want reply to a different email address'
               template:
                 type: suggest
                 mode: form_with_attachments.email_templates
                 max_items: 1
               subject:
                 type: text
-                instructions: 'Enter e-mail subjecet'
           file_deletion:
             type: toggle
             display: File deletion
